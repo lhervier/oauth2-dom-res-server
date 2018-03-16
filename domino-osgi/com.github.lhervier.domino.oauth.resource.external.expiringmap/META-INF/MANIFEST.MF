@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Expiringmap Plug-in
+Bundle-SymbolicName: com.github.lhervier.domino.oauth.resource.external.expiringmap
+Bundle-Version: 0.5.8
+Bundle-ClassPath: expiringmap-0.5.8.jar
+Export-Package: net.jodah.expiringmap,
+ net.jodah.expiringmap.internal
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

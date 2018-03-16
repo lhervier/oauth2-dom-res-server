@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.equinox.http.registry.servlets">
+      <servlet
+            alias="/resource-sample"
+            class="com.github.lhervier.domino.oauth.resource.sample.SampleResourceServlet"
+            load-on-startup="true">
+         <init-param
+               name="contextConfigLocation"
+               value="com.github.lhervier.domino.oauth.resource.sample.SampleResourceConfig">
+         </init-param>
+         <init-param
+               name="contextClass"
+               value="org.springframework.web.context.support.AnnotationConfigWebApplicationContext">
+         </init-param>
+         <init-param
+               name="dispatchOptionsRequest"
+               value="true">
+         </init-param>
+      </servlet>
+   </extension>
+
+</plugin>
