@@ -6,8 +6,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.lhervier.domino.spring.servlet.NotesContext;
@@ -24,11 +22,6 @@ import lotus.domino.View;
 
 public class BearerContext {
 
-	/**
-	 * Logger
-	 */
-	private static final Log LOG = LogFactory.getLog(BearerContext.class);
-	
 	/**
 	 * The id token service
 	 */
@@ -60,34 +53,38 @@ public class BearerContext {
 	/**
 	 * The id token
 	 */
-	public AccessToken accessToken;
+	private AccessToken accessToken;
+	
+	/**
+	 * No token ?
+	 */
+	private NoTokenException noTokenEx = null;
+	
+	/**
+	 * Invaliud token ?
+	 */
+	private InvalidTokenException invalidTokenEx = null;
 	
 	/**
 	 * Bean initialization
 	 * @throws InvalidTokenException if the token is invalid
 	 */
 	@PostConstruct
-	public void init() throws InvalidTokenException {
+	public void init() {
 		this.bearerSession = null;
 		try {
 			// Extract bearer token
 			String auth = this.request.getHeader("Authorization");
 			if( auth == null )
-				throw new InvalidTokenException("Authorization header is mandatory");
+				throw new NoTokenException("Authorization header is mandatory");
 			if( !auth.startsWith("Bearer ") )
-				throw new InvalidTokenException("Authorization header must use the Bearer schema");
+				throw new NoTokenException("Authorization header must use the Bearer schema");
 			String accessToken = auth.substring("Bearer ".length());
 			if( Utils.isEmpty(accessToken) )
-				throw new InvalidTokenException("Token cannot be empty");
+				throw new NoTokenException("Token cannot be empty");
 			
 			// Get the id_token
 			this.accessToken = this.tokenSvc.getIdToken(accessToken);
-			
-			// Check sign key
-			if( this.accessToken == null ) {
-				LOG.error("unable to get id token from access token...");
-				throw new InvalidTokenException("Access token is invalid");
-			}
 			
 			// Get the user name in the subject
 			String sub = this.accessToken.getSub();
@@ -98,6 +95,10 @@ public class BearerContext {
 			// Create session
 			this.userNameList = NotesUtil.createUserNameList(userName);
 			this.bearerSession = XSPNative.createXPageSession(userName, this.userNameList, false, false);
+		} catch (InvalidTokenException e) {
+			this.invalidTokenEx = e;
+		} catch (NoTokenException e) {
+			this.noTokenEx = e;
 		} catch (NotesException e) {
 			throw new RuntimeException(e);
 		} catch (NException e) {
@@ -151,16 +152,28 @@ public class BearerContext {
 	}
 	
 	/**
+	 * Raise an exception if needed
+	 */
+	private void checkException() throws NoTokenException, InvalidTokenException {
+		if( this.noTokenEx != null )
+			throw this.noTokenEx;
+		if( this.invalidTokenEx != null )
+			throw this.invalidTokenEx;
+	}
+	
+	/**
 	 * Return the bearer session
 	 */
-	public Session getBearerSession() {
+	public Session getBearerSession() throws InvalidTokenException, NoTokenException {
+		this.checkException();
 		return this.bearerSession;
 	}
 
 	/**
 	 * @return the accessToken
 	 */
-	public AccessToken getAccessToken() {
+	public AccessToken getAccessToken() throws InvalidTokenException, NoTokenException {
+		this.checkException();
 		return accessToken;
 	}
 }

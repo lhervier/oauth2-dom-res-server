@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.github.lhervier.domino.oauth.resource.BearerContext;
+import com.github.lhervier.domino.oauth.resource.InvalidTokenException;
+import com.github.lhervier.domino.oauth.resource.NoTokenException;
 
 @Controller
 public class SampleController {
@@ -40,7 +42,7 @@ public class SampleController {
 	@RequestMapping("/apis/users")
 	public @ResponseBody UsersResponse getUsers(
 			@RequestParam(required = false, defaultValue = "") String startsWith, 
-			@RequestParam(required = false, defaultValue = "10") int limit) throws NotesException {
+			@RequestParam(required = false, defaultValue = "10") int limit) throws NotesException, NoTokenException, InvalidTokenException {
 		// The aspect ensure that the session is not null
 		Session session = this.bearerCtx.getBearerSession();
 		Database db = (Database) session.getAddressBooks().get(0);
