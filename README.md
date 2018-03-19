@@ -114,6 +114,71 @@ The token introspection endpoint depends on your Authroization Server.
 
 The clientId and secret are used to authenticate your resource server with the OAuth2 Authorization Server when accessing the introspection endpoint.
 
+### Values for [oauth2-dom-auth-server](https://github.com/lhervier/oauth2-dom-auth-server)
+
+Have a look at the documentation of oauth2-dom-auth-server project. Once your server is up and running, declare a new application :
+
+- Open the oauth2.nsf database with a web browser
+- Login as a user with the [AppsManager] role
+- Add a new application :
+	- Enter a name
+	- Client type can be public or confidential
+	- Set "readers" to the list of users that will be able to log into this application
+	- Redirect uri: for testing purpose, enter "http://localhost/myapp"
+
+When you will click save, you will obtain the client id and the secret.
+
+Now, in order to test the values, get an access token : Point your browser to the oauth2 authorize endpoint 
+
+	http://<your domino server>/oauth2.nsf/oauth2-server/authorize?client_id=<your client id>&response_type=token&redirect_uri=http%3A%2F%2Flocalhost%2Fmyapp
+
+Your browser should be redirected to the non existing url "http://localhost/myapp", followed by "#access_token=<the access token>".
+Extract this value, and keep it for testing.
+	
+The token introspection endpoint for oauth2-dom-auth-server is : 
+
+	http://<your domino server>/oauth2.nsf/oauth2-server/checkToken
+
+To check that you extracted the right values, you can use a Rest client like [Postman](https://www.getpostman.com) to send a POST request to this URL :
+- Add a "token" request parameter with the access token value extracted in the previous step. Use "x-www-form-urlencoded" format
+- Add an authorization using Basic Authentication. Set the user as the client id, and the password as the secret.
+
+You should get an answer saying that the token is valid (in the 'active' JSON attribute).
+
+### Values for Google Cloud
+
+- Open the [Google Cloud Developper Console](https://console.cloud.google.com)
+- Create a new project
+- From the main menu (the icon in the upper left corner) go to "APIs And Services"
+- Go to the "Credentials" page
+- Click "create credential" / "OAuth client id"
+- Select "Web application" client type :
+	- Enter a name for your credentials
+	- For testing purpose, enter "http://localhost/myapp" in the "Authorized redirect uris" field
+- Click create
+- A popin will show with the client id and the secret
+
+Now, extract an access token by pointing your browser to the oauth2 authorization endpoint :
+
+	https://accounts.google.com/o/oauth2/v2/auth?client_id=<your client id>&response_type=token&redirect_uri=http%3A%2F%2Flocalhost%2Fmyapp&scope=profile
+
+Your browser should be redirected to the non existing url "http://localhost/myapp", followed by "#access_token=<the access token>".
+Extract this value, and keep it for testing.
+	
+The token introspection endpoint for Google Cloud is : https://www.googleapis.com/oauth2/v3/tokeninfo
+
+Beware that this endpoint is not compliant to the RFC7662 ! The parameter have to be named "access_token" instead of "token", 
+and you will not have an "active" attribute in the answer !
+
+To check if you extracted the right values, you can use a Rest client like [Postman](https://www.getpostman.com) to send a POST request to the URL :
+- Set an "access_token" request parameter with the access token value extracted in the previous step. Use "x-www-form-urlencoded" format
+- Add authorization using Basic Authentication. Set the user as the client id, and the password as the secret.
+
+You should get a JSON answer with information from the token (like the expiration date in a "exp" attribute).
+
+### Getting values for Microsoft Azure
+
+This will not work because Azure do not provide a token introspection endpoint. The access tokens provided by Azure are JWTs that you can verify using a RSA public key.
 
 
 
