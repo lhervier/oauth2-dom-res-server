@@ -3,16 +3,34 @@
 - [Prepare Domino Server](#prepare-domino-server)
   - [Deploy the dom-spring plugins on your Domino Server](#deploy-the-dom-spring-plugins-on-your-domino-server)
   - [Deploy the oauth2-dom-res-server plugins on your Domino Server](#deploy-the-oauth2-dom-res-server-plugins-on-your-domino-server)
-- [Prepare your IDE](#prepare-your-ide)
-  - [Domino Designer](#domino-designer)
+  - [Configure the awaited properties](#configure-the-awaited-properties)
+- [Generating the update site yourself (from the sources)](#generating-the-update-site-yourself-from-the-sources)
+  - [Download the source](#download-the-source)
+  - [Download the dom-spring update site (or generate it yourself)](#download-the-dom-spring-update-site-or-generate-it-yourself)
+  - [Using Domino Designer](#using-domino-designer)
+    - [Install the dom-spring update site](#install-the-dom-spring-update-site)
+    - [Import the source code](#import-the-source-code)
+    - [Generate the update site](#generate-the-update-site)
+  - [Using Eclipse Oxygen](#using-eclipse-oxygen)
+    - [Install the XPages SDK](#install-the-xpages-sdk)
+    - [Declare Java Runtime and Target Platform](#declare-java-runtime-and-target-platform)
+    - [Install the dom-spring plugins](#install-the-dom-spring-plugins)
+    - [Import the sources](#import-the-sources)
+    - [Generate the update site](#generate-the-update-site)
+  - [Using maven](#using-maven)
+- [Implementing a new resource (Rest Service)](#implementing-a-new-resource-rest-service)
+  - [Declare a new OAuth2 application](#declare-a-new-oauth2-application)
+  - [Prepare Domino Designer](#prepare-domino-designer)
     - [Install dom-spring update site](#install-dom-spring-update-site)
     - [Install oauth2-dom-res-server update site](#install-oauth2-dom-res-server-update-site)
-  - [Eclipse oxygen](#eclipse-oxygen)
+  - [Prepare Eclipse Oxygen](#prepare-eclipse-oxygen)
     - [Install the XPages SDK](#install-the-xpages-sdk)
     - [Declare Java Runtime and Target Platform](#declare-java-runtime-and-target-platform)
     - [Install the dom-spring plugins](#install-the-dom-spring-plugins)
     - [Install the oauth2-dom-res-server plugins](#install-the-oauth2-dom-res-server-plugins)
-- [Create a rest service](#create-a-rest-service)
+  - [Implement the rest service (the oauth2 resource)](#implement-the-rest-service-the-oauth2-resource)
+- [The sample resource application](#the-sample-resource-application)
+- [TODO](#todo)
 
 This project aims at providing a set of Domino OSGI plugins that allows you to write an OAUTH2 resource server. It uses the dom-spring project, allowing you to
 write your services as standard Spring Rest controllers.
@@ -35,6 +53,8 @@ Note that when implementing servlets as OSGi plugins (this is what dom-spring is
 When using a context path that reference a nsf database, if the "Authorization" HTTP header is present, Domino will expect it to contain the user login and password.
 But in our case, we will send this header with the oauth2 access token in it. For this reason, this framework will make the servlet respond when only called from 
 the root of the server.
+
+
 
 # Prepare Domino Server
 
@@ -93,6 +113,116 @@ The awaited properties are :
 The token introspection endpoint depends on your Authroization Server.
 
 The clientId and secret are used to authenticate your resource server with the OAuth2 Authorization Server when accessing the introspection endpoint.
+
+
+
+
+# Generating the update site yourself (from the sources)
+
+## Download the source
+
+First, clone or download the source code from github into a local folder.
+
+## Download the dom-spring update site (or generate it yourself)
+
+Refer to [the dom-spring project page](http://github.com/lhervier/dom-spring) to donwload it.
+
+## Using Domino Designer
+
+### Install the dom-spring update site
+
+- Go to File/Preferences menu, in the "Domino Designer" section, and check "Enable Eclipse plug-in install"
+- Now, go to File/Application/Install menu.
+- Select "Search for new features"
+- Add a "Zip/jar location" and go find the zip that correspond to the dom-spring update site.
+- Click Finish, and accept licences.
+- Designer will ask to restart.
+
+### Import the source code
+
+- Open Domino Designer
+- Open the "package explorer" view, right click in the blank part, and select Import.
+- In the "General" section, select "Existing projets into workspace"
+- Click "Browse" and select the folder named "domino-osgi" in this project's sources.
+- Select all projects and click "Import"
+
+The code is now imported in your IBM Domino Designer. It should compile fine.
+
+### Generate the update site
+
+Open the file named site.xml in the "domino-osgi/com.github.lhervier.domino.oauth.resource.update" project, and click the "Build all" button.
+
+## Using Eclipse Oxygen
+
+### Install the XPages SDK
+
+Download the XPages SDK zip file from :
+
+	https://www.openntf.org/main.nsf/project.xsp?r=project/XPages%20SDK%20for%20Eclipse%20RCP
+
+Unzip the file to the folder of your choice. Then, in Eclipse, go to the menu "Help / Install new software".
+
+In the dialog box, click the "add" button in from of the "Work with" combo :
+
+- Name = XPages sdk
+- Click the "Folder" button, and go find the folder named "org.openntf.xsp.sdk.updatesite" in the extracted zip file.
+
+Select all features, accept licences, "Install anyway" when prompted to, and restart Eclipse.
+
+### Declare Java Runtime and Target Platform
+
+Open Eclipse preferences, and go to the section "XPages SDK" :
+
+- Enable using IBM DOMINO on this computer
+- Enter the path to the notes.ini, the installation folder of your Domino Server, and the path to your data folder.
+- Click "Automatically create JRE for domino"
+- And "Apply".
+
+This will create a new JRE Runtime, and a new Target platform. Select them :
+
+- Go to the section "Java / Installed JREs", and select the newly created JRE (XPages Domino JRE)
+- Go to the section "Plugins Development / Target platform", and select the newly created target platform (Domino Target).
+
+### Install the dom-spring plugins
+
+- Menu Help / Install New Software
+- Add an update site
+- Go find the update site (the zip file) you juste downloaded
+- Click next, finish, etc... until Eclipse ask to reboot.
+
+### Import the sources
+
+In the package explorer, right click :
+
+- Select "Import", then choose "General / Existing project into workspace". 
+- Go search for the folder where you cloned the sources
+- And import the projects.
+
+The code should compile fine.
+
+### Generate the update site
+
+Once the code is deployed, you will be able to generate the update site by opening the site.xml file of the "com.github.lhervier.domino.oauth.resource.update" project.
+Simply click the "Build all" button.
+
+## Using maven
+
+As the dom-spring plugins are not available at maven central, you must first install them manually. 
+For this, follow the README.md file present in the dom-spring github website :
+
+- Install "IBM Domino Update Site for Build Management", let's say in c:\UpdateSite
+- Download dom-spring source code
+- In the source folder run the maven install command : mvn install -Dnotes-platform=file:///c:/UpdateSite
+
+Now that your local maven repository is initialized, generate the oauth2-dom-res-server update site. CD into the "domino-osgi" folder, and just type :
+
+	mvn install -Dnotes-platform=file:///c:/UpdateSite
+
+The update site will be generated in 
+
+	/domino-osgi/com.github.lhervier.domino.oauth.resource.update/target/com.github.lhervier.domino.oauth.resource.update-<version>.zip
+
+
 
 # Implementing a new resource (Rest Service)
 
@@ -190,6 +320,8 @@ The BearerContext will give you access to :
 - The description of the access token by using its getAccessToken() method.
 - A Notes Session opened as a user whose name is in the "sub" property of the token. Use the getBearerSession() method to get it.
 
+
+
 # The sample resource application
 
 The "sample" folder contains a sample application that declares a simple Rest Service accessible via a bearer token. Once you have deployed the plugin, you can access the following URL :
@@ -202,6 +334,8 @@ The request will answer with a JSON object that reads the users from the ($VIMPe
 also return the current user name, and the authorized scopes.
 
 To play with the code, simply import the projects present in the "sample" sub folder into Domino Designer.
+
+
 
 # TODO
 
